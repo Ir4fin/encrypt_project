@@ -4,6 +4,9 @@ import javax.swing.*;
 import java.awt.*;
 
 public class NotificationService {
+    private static final float OPACITY_STEP = 0.05f;
+    private static final int FADE_TIMER_DELAY = 15;
+    private static final int AUTO_CLOSE_DELAY = 2000;
 
     public static void showSuccess(String message) {
         showCustomDialog(message, "Success", new Color(0, 255, 0));
@@ -44,17 +47,20 @@ public class NotificationService {
         dialog.setOpacity(0f);
         dialog.setVisible(true);
 
-        // Эффект fade-in
-        new Timer(15, e -> {
+        new Timer(FADE_TIMER_DELAY, e -> {
             float opacity = dialog.getOpacity();
-            if (opacity < 1f) {
-                dialog.setOpacity(opacity + 0.05f);
+            float next = opacity + OPACITY_STEP;
+            if (next < 1f) {
+                dialog.setOpacity(next);
             } else {
+                dialog.setOpacity(1f);
                 ((Timer) e.getSource()).stop();
             }
         }).start();
 
-        // Автоматическое закрытие через 2 секунды
-        new Timer(2000, e -> dialog.dispose()).start();
+        // Авто-закрытие
+        new Timer(AUTO_CLOSE_DELAY, e -> {
+            dialog.dispose();
+        }).start();
     }
 }

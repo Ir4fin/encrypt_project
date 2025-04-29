@@ -5,10 +5,8 @@ import org.example.enums.Alphabet;
 import org.example.cipher.CaesarCipher;
 
 import javax.swing.*;
+import javax.swing.border.LineBorder;
 import java.awt.*;
-import java.awt.event.ActionEvent;
-import java.awt.event.ActionListener;
-import java.io.File;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
@@ -18,120 +16,151 @@ import static org.example.enums.InformationalMessage.FILE_WRITTEN;
 
 public class GUI extends JFrame {
 
-    private final NotificationService notificationService = new NotificationService();
-    private final Validator validator = new Validator();
-    private final CaesarCipher caesarCipher = new CaesarCipher();
-    private JTextField inputTextField;
-    private JTextField outputTextField;
-    private JTextField keyTextField;
-    private JComboBox<String> alphabetComboBox;
-    private JButton selectInputButton;
-    private JButton selectOutputButton;
-    private JButton encryptButton;
-    private JButton decryptButton;
+    private JTextField inputField;
+    private JTextField outputField;
+    private JTextField keyField;
+    private JComboBox<Alphabet> alphabetCombo;
 
 
     public GUI() {
-        // Настройка окна
-        setTitle("Caesar Cipher Encryption Tool");
-        setSize(500, 200);
-        setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
+        try {
+            UIManager.setLookAndFeel("javax.swing.plaf.nimbus.NimbusLookAndFeel");
+        } catch (Exception ignored) {
+        }
+        Font uiFont = new Font("Segoe UI", Font.PLAIN, 14);
+        UIManager.put("Label.font", uiFont);
+        UIManager.put("TextField.font", uiFont);
+        UIManager.put("Button.font", uiFont);
+        UIManager.put("ComboBox.font", uiFont);
+
+        // 2) Параметры окна ----------------------------
+        setTitle("Encrypter");
+        setDefaultCloseOperation(EXIT_ON_CLOSE);
+        setSize(600, 350);
         setLocationRelativeTo(null);
-        setLayout(new FlowLayout());
 
-        // Создаем элементы интерфейса
-        inputTextField = new JTextField(20);
-        outputTextField = new JTextField(20);
-        keyTextField = new JTextField(5);
-        inputTextField.setEditable(false);
-        outputTextField.setEditable(false);
+        // 3) Главная панель с GridBag ------------------
+        JPanel panel = new JPanel(new GridBagLayout());
+        panel.setBackground(new Color(245, 245, 250)); // светло-серый
 
-        // Выпадающий список для выбора алфавита
-        String[] alphabets = {"English", "Russian"};
-        alphabetComboBox = new JComboBox<>(alphabets);
+        GridBagConstraints gbc = new GridBagConstraints();
+        gbc.insets = new Insets(8, 12, 8, 12);
+        gbc.fill = GridBagConstraints.HORIZONTAL;
 
-        // Кнопки для выбора файлов
-        selectInputButton = new JButton("Choose Input File");
-        selectOutputButton = new JButton("Choose Output File");
-        encryptButton = new JButton("Encrypt");
-        decryptButton = new JButton("Decrypt");
+        // Строка 0: Заголовок
+        JLabel title = new JLabel("Encrypter", SwingConstants.CENTER);
+        title.setFont(new Font("Segoe UI", Font.BOLD, 18));
+        title.setForeground(new Color(50, 50, 80));
+        gbc.gridx = 0;
+        gbc.gridy = 0;
+        gbc.gridwidth = 2;
+        panel.add(title, gbc);
 
-        // Добавляем элементы на форму
-        add(new JLabel("Input File:"));
-        add(inputTextField);
-        add(selectInputButton);
-        add(new JLabel("Output File:"));
-        add(outputTextField);
-        add(selectOutputButton);
-        add(new JLabel("Key:"));
-        add(keyTextField);
-        add(new JLabel("Alphabet:"));
-        add(alphabetComboBox);
-        add(encryptButton);
-        add(decryptButton);
+        // Строка 1: Input file
+        gbc.gridwidth = 1;
+        gbc.gridy = 1;
+        gbc.gridx = 0;
+        panel.add(new JLabel("Input File:"), gbc);
+        inputField = new JTextField();
+        inputField.setBackground(Color.WHITE);
+        inputField.setBorder(new LineBorder(Color.GRAY, 1, true));
+        gbc.gridx = 1;
+        panel.add(inputField, gbc);
 
-        // Действие для выбора входного файла
-        selectInputButton.addActionListener(new ActionListener() {
-            @Override
-            public void actionPerformed(ActionEvent e) {
-                JFileChooser fileChooser = new JFileChooser();
-                fileChooser.setDialogTitle("Choose Input File");
-                int result = fileChooser.showOpenDialog(null);
-                if (result == JFileChooser.APPROVE_OPTION) {
-                    File selectedFile = fileChooser.getSelectedFile();
-                    inputTextField.setText(selectedFile.getAbsolutePath());
-                }
-            }
-        });
+        // Select input button
+        gbc.gridy = 2;
+        gbc.gridx = 1;
+        JButton browseIn = new JButton("Browse...");
+        styleButton(browseIn);
+        browseIn.addActionListener(e -> selectFile(inputField));
+        panel.add(browseIn, gbc);
 
-        // Действие для выбора выходного файла
-        selectOutputButton.addActionListener(new ActionListener() {
-            @Override
-            public void actionPerformed(ActionEvent e) {
-                JFileChooser fileChooser = new JFileChooser();
-                fileChooser.setDialogTitle("Choose Output File");
-                int result = fileChooser.showSaveDialog(null);
-                if (result == JFileChooser.APPROVE_OPTION) {
-                    File selectedFile = fileChooser.getSelectedFile();
-                    if (!selectedFile.getName().endsWith(".txt")) {
-                        selectedFile = new File(selectedFile.getAbsolutePath() + ".txt");
-                    }
-                    outputTextField.setText(selectedFile.getAbsolutePath());
-                }
-            }
-        });
+        // Строка 3: Output file
+        gbc.gridy = 3;
+        gbc.gridx = 0;
+        panel.add(new JLabel("Output File:"), gbc);
+        outputField = new JTextField();
+        outputField.setBackground(Color.WHITE);
+        outputField.setBorder(new LineBorder(Color.GRAY, 1, true));
+        gbc.gridx = 1;
+        panel.add(outputField, gbc);
 
-        // Действие для кнопки шифрования
-        encryptButton.addActionListener(new ActionListener() {
-            @Override
-            public void actionPerformed(ActionEvent e) {
-                processFile("encrypt");
-            }
-        });
+        // Select output button
+        gbc.gridy = 4;
+        gbc.gridx = 1;
+        JButton browseOut = new JButton("Browse...");
+        styleButton(browseOut);
+        browseOut.addActionListener(e -> selectFile(outputField));
+        panel.add(browseOut, gbc);
 
-        // Действие для кнопки дешифрования
-        decryptButton.addActionListener(new ActionListener() {
-            @Override
-            public void actionPerformed(ActionEvent e) {
-                processFile("decrypt");
-            }
-        });
+        // **Переносим Key на новую строку**  -----------
+        gbc.gridy = 5;
+        gbc.gridx = 0;
+        panel.add(new JLabel("Key:"), gbc);
+        keyField = new JTextField();
+        keyField.setBackground(Color.WHITE);
+        keyField.setBorder(new LineBorder(Color.GRAY, 1, true));
+        gbc.gridx = 1;
+        panel.add(keyField, gbc);
+
+        // Алфавит
+        gbc.gridy = 6;
+        gbc.gridx = 0;
+        panel.add(new JLabel("Alphabet:"), gbc);
+        alphabetCombo = new JComboBox<>(Alphabet.values());
+        alphabetCombo.setBackground(Color.WHITE);
+        alphabetCombo.setBorder(new LineBorder(Color.GRAY, 1, true));
+        gbc.gridx = 1;
+        panel.add(alphabetCombo, gbc);
+
+        // Кнопки Encrypt / Decrypt
+        gbc.gridy = 7;
+        gbc.gridx = 0;
+        JButton encryptBtn = new JButton("Encrypt");
+        styleButton(encryptBtn);
+        encryptBtn.addActionListener(e -> processFile("encrypt"));
+        panel.add(encryptBtn, gbc);
+
+        gbc.gridx = 1;
+        JButton decryptBtn = new JButton("Decrypt");
+        styleButton(decryptBtn);
+        decryptBtn.addActionListener(e -> processFile("decrypt"));
+        panel.add(decryptBtn, gbc);
+
+        add(panel);
+    }
+
+    private void styleButton(JButton btn) {
+        btn.setBackground(new Color(0, 120, 215));
+        btn.setForeground(Color.WHITE);
+        btn.setBorder(BorderFactory.createEmptyBorder());       // убираем рамку
+        btn.setFocusPainted(false);
+        btn.setContentAreaFilled(true);                         // фон всё ещё заливается
+        btn.setBorderPainted(false);
+
+    }
+
+    private void selectFile(JTextField field) {
+        JFileChooser chooser = new JFileChooser();
+        if (chooser.showOpenDialog(this) == JFileChooser.APPROVE_OPTION) {
+            field.setText(chooser.getSelectedFile().getAbsolutePath());
+        }
     }
 
     // Метод обработки файла
     private void processFile(String operation) {
         // Получаем путь к файлам
-        String inputFilePath = inputTextField.getText();
-        String outputFilePath = outputTextField.getText();
-        String keyString = keyTextField.getText();
+        String inputFilePath = inputField.getText();
+        String outputFilePath = outputField.getText();
+        String keyString = keyField.getText();
 
         // Проверяем, если файлы не выбраны или ключ не введен, то выводим ошибку
         if (inputFilePath.isEmpty() || outputFilePath.isEmpty()) {
-            notificationService.showError(FILE_NOT_SELECTED.getValue());
+            NotificationService.showError(FILE_NOT_SELECTED.getValue());
             return;
         }
         if (keyString.isEmpty()) {
-            notificationService.showError(KEY_NOT_SPECIFIED.getValue());
+            NotificationService.showError(KEY_NOT_SPECIFIED.getValue());
             return;
         }
 
@@ -139,15 +168,18 @@ public class GUI extends JFrame {
             // Преобразуем пути файлов в Path
             Path inputPath = Paths.get(inputFilePath);
             Path outputPath = Paths.get(outputFilePath);
-            int key = Integer.parseInt(keyString);
+
 
             // Выбор алфавита
-            String selectedAlphabet = (String) alphabetComboBox.getSelectedItem();
-            Alphabet alphabet = selectedAlphabet.equals("English") ? Alphabet.ENGLISH : Alphabet.RUSSIAN;
-
+            Alphabet alphabet = (Alphabet) alphabetCombo.getSelectedItem();
+            if (alphabet == null) {
+                NotificationService.showError("Выберите алфавит!");
+                return;
+            }
             // Валидация
-            validator.validateKey(keyString, alphabet);
-            validator.validateFile(inputPath);
+            Validator.validateKey(keyString, alphabet);
+            int key = Integer.parseInt(keyString);
+            Validator.validateFile(inputPath);
 
             // Чтение текста из файла
             String text = new String(Files.readAllBytes(inputPath));
@@ -155,19 +187,19 @@ public class GUI extends JFrame {
             // Обработка текста: шифрование или дешифрование
             String processedText = "";
             if (operation.equals("encrypt")) {
-                processedText = caesarCipher.encrypt(text, key, alphabet);
+                processedText = CaesarCipher.encrypt(text, key, alphabet);
             } else if (operation.equals("decrypt")) {
-                processedText = caesarCipher.decrypt(text, key, alphabet); // Для дешифрования с обратным ключом
+                processedText = CaesarCipher.decrypt(text, key, alphabet); // Для дешифрования с обратным ключом
             }
 
             // Запись обработанного текста в выходной файл
             Files.write(outputPath, processedText.getBytes());
-            notificationService.showSuccess(FILE_WRITTEN.getValue());
+            NotificationService.showSuccess(FILE_WRITTEN.getValue());
         } catch (IllegalArgumentException ex) {
-            notificationService.showError(ex.getMessage());
+            NotificationService.showError(ex.getMessage());
         } catch (Exception ex) {
             ex.printStackTrace();
-            notificationService.showError(FILE_PROCESSING_ERROR.getValue());
+            NotificationService.showError(FILE_PROCESSING_ERROR.getValue());
         }
     }
 }

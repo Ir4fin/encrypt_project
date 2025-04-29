@@ -2,8 +2,9 @@ package org.example;
 
 import org.example.enums.Alphabet;
 
+import java.io.BufferedReader;
 import java.io.IOException;
-import java.io.InputStream;
+import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
 import java.nio.file.Path;
 
@@ -11,7 +12,7 @@ import static org.example.enums.Error.*;
 
 public class Validator {
 
-    public void validateKey(String shiftString, Alphabet alphabet) {
+    public static void validateKey(String shiftString, Alphabet alphabet) {
         int size = alphabet.size();
         int shift;
         try {
@@ -44,26 +45,23 @@ public class Validator {
             throw new IllegalArgumentException(FILE_IS_NOT_TEXT.getValue());
         }
 
-        try (InputStream inputStream = Files.newInputStream(filePath)) {
-            byte[] buffer = new byte[100];  // Берем первые 100 байтов
-            int bytesRead = inputStream.read(buffer);
-            if (bytesRead == -1) { // Пустой файл
-                throw new IllegalArgumentException(FILE_IS_EMPTY.getValue());
-            }
-            // Проверяем, что содержимое — это текст (не бинарные данные) и соответствует системе Unicod
-            for (int i = 0; i < bytesRead; i++) {
-                if (!isValidUnicode(buffer[i])) {
+        // Читаем первые 1000 символов (или меньше, если файл короче)
+        try (BufferedReader reader = Files.newBufferedReader(filePath, StandardCharsets.UTF_8)) {
+            int maxChars = 1000;
+            int ch;
+            int count = 0;
+            while (count++ < maxChars && (ch = reader.read()) != -1) {
+                // Если это управляющий символ (кроме таба, LF, CR) — считаем файл бинарным
+                if (Character.isISOControl(ch)
+                        && ch != '\n' && ch != '\r' && ch != '\t') {
                     throw new IllegalArgumentException(FILE_NOT_CONTAINS_CORRECT_TEXT.getValue());
                 }
             }
         } catch (IOException e) {
             throw new IllegalArgumentException(FILE_IS_NOT_POSSIBLE_TO_READ.getValue());
         }
-        return true;
-    }
 
-    private static boolean isValidUnicode(byte b) {
-        return (b >= 128 && b <= 0x10FFFF);
+        return true;
     }
 }
 

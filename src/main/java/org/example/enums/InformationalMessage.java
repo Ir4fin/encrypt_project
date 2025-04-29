@@ -1,8 +1,7 @@
 package org.example.enums;
 
 public enum InformationalMessage {
-    FILE_IS_CORRECT("File has been validated successfully"),
-    FILE_WRITTEN("File has been written");
+    FILE_WRITTEN("File with result has been written");
 
     private final String value;
 
