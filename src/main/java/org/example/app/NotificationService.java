@@ -1,28 +1,24 @@
 package org.example.app;
 
-import com.formdev.flatlaf.FlatDarculaLaf;
-
 import javax.swing.*;
 import java.awt.*;
 
 public class NotificationService {
 
-    private NotificationService() {}
-
     public static void showSuccess(String message) {
-        showCustomDialog(message, "Успех", new Color(0, 255, 0));
+        showCustomDialog(message, "Success", new Color(0, 255, 0));
     }
 
     public static void showError(String message) {
-        showCustomDialog(message, "Ошибка", new Color(255, 50, 50));
+        showCustomDialog(message, "Error", new Color(255, 50, 50));
     }
 
     public static void showInfo(String message) {
-        showCustomDialog(message, "Информация", new Color(0, 200, 255));
+        showCustomDialog(message, "Information", new Color(0, 200, 255));
     }
 
     public static void showWarning(String message) {
-        showCustomDialog(message, "Предупреждение", new Color(255, 200, 0));
+        showCustomDialog(message, "Warning", new Color(255, 200, 0));
     }
 
     private static void showCustomDialog(String message, String title, Color color) {

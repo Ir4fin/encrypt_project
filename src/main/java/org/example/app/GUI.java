@@ -13,9 +13,14 @@ import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 
+import static org.example.enums.Error.*;
+import static org.example.enums.InformationalMessage.FILE_WRITTEN;
+
 public class GUI extends JFrame {
 
-
+    private final NotificationService notificationService = new NotificationService();
+    private final Validator validator = new Validator();
+    private final CaesarCipher caesarCipher = new CaesarCipher();
     private JTextField inputTextField;
     private JTextField outputTextField;
     private JTextField keyTextField;
@@ -121,8 +126,12 @@ public class GUI extends JFrame {
         String keyString = keyTextField.getText();
 
         // Проверяем, если файлы не выбраны или ключ не введен, то выводим ошибку
-        if (inputFilePath.isEmpty() || outputFilePath.isEmpty() || keyString.isEmpty()) {
-            JOptionPane.showMessageDialog(this, "Please select both input and output files, and enter a key.", "Error", JOptionPane.ERROR_MESSAGE);
+        if (inputFilePath.isEmpty() || outputFilePath.isEmpty()) {
+            notificationService.showError(FILE_NOT_SELECTED.getValue());
+            return;
+        }
+        if (keyString.isEmpty()) {
+            notificationService.showError(KEY_NOT_SPECIFIED.getValue());
             return;
         }
 
@@ -136,9 +145,9 @@ public class GUI extends JFrame {
             String selectedAlphabet = (String) alphabetComboBox.getSelectedItem();
             Alphabet alphabet = selectedAlphabet.equals("English") ? Alphabet.ENGLISH : Alphabet.RUSSIAN;
 
-            // Валидация ключа
-            Validator validator = new Validator();
+            // Валидация
             validator.validateKey(keyString, alphabet);
+            validator.validateFile(inputPath);
 
             // Чтение текста из файла
             String text = new String(Files.readAllBytes(inputPath));
@@ -146,17 +155,19 @@ public class GUI extends JFrame {
             // Обработка текста: шифрование или дешифрование
             String processedText = "";
             if (operation.equals("encrypt")) {
-                processedText = CaesarCipher.encrypt(text, key, alphabet);
+                processedText = caesarCipher.encrypt(text, key, alphabet);
             } else if (operation.equals("decrypt")) {
-                processedText = CaesarCipher.decrypt(text, key, alphabet); // Для дешифрования с обратным ключом
+                processedText = caesarCipher.decrypt(text, key, alphabet); // Для дешифрования с обратным ключом
             }
 
             // Запись обработанного текста в выходной файл
             Files.write(outputPath, processedText.getBytes());
-            JOptionPane.showMessageDialog(this, "File " + operation + "ed successfully.", "Success", JOptionPane.INFORMATION_MESSAGE);
+            notificationService.showSuccess(FILE_WRITTEN.getValue());
+        } catch (IllegalArgumentException ex) {
+            notificationService.showError(ex.getMessage());
         } catch (Exception ex) {
             ex.printStackTrace();
-            JOptionPane.showMessageDialog(this, "An error occurred while processing the file.", "Error", JOptionPane.ERROR_MESSAGE);
+            notificationService.showError(FILE_PROCESSING_ERROR.getValue());
         }
     }
 }
