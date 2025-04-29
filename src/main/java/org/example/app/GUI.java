@@ -151,7 +151,7 @@ public class GUI extends JFrame {
             // Выбор алфавита
             Alphabet alphabet = (Alphabet) alphabetCombo.getSelectedItem();
             if (alphabet == null) {
-                NotificationService.showError("Выберите алфавит!");
+                NotificationService.showError("You must choose alphabet");
                 return;
             }
             // Валидация
@@ -196,7 +196,7 @@ public class GUI extends JFrame {
 
             Alphabet alphabet = (Alphabet) alphabetCombo.getSelectedItem();
             if (alphabet == null) {
-                NotificationService.showError("Выберите алфавит!");
+                NotificationService.showError("You must choose alphabet");
                 return;
             }
 
