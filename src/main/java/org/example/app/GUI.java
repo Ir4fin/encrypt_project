@@ -34,7 +34,7 @@ public class GUI extends JFrame {
         UIManager.put("ComboBox.font", uiFont);
 
         // 2) Параметры окна ----------------------------
-        setTitle("Encrypter");
+        setTitle("Caesar Cipher Encrypter/Decrypter");
         setDefaultCloseOperation(EXIT_ON_CLOSE);
         setSize(600, 350);
         setLocationRelativeTo(null);
@@ -48,7 +48,7 @@ public class GUI extends JFrame {
         gbc.fill = GridBagConstraints.HORIZONTAL;
 
         // Строка 0: Заголовок
-        JLabel title = new JLabel("Encrypter", SwingConstants.CENTER);
+        JLabel title = new JLabel("Encrypter/Decrypter", SwingConstants.CENTER);
         title.setFont(new Font("Segoe UI", Font.BOLD, 18));
         title.setForeground(new Color(50, 50, 80));
         gbc.gridx = 0;
@@ -109,7 +109,7 @@ public class GUI extends JFrame {
         panel.add(new JLabel("Alphabet:"), gbc);
         alphabetCombo = new JComboBox<>(Alphabet.values());
         alphabetCombo.setBackground(Color.WHITE);
-        alphabetCombo.setBorder(new LineBorder(Color.GRAY, 1, true));
+        alphabetCombo.setBorder(BorderFactory.createEmptyBorder());
         gbc.gridx = 1;
         panel.add(alphabetCombo, gbc);
 
