@@ -1,7 +1,5 @@
 package org.example.app;
 
-import org.example.app.GUI;
-
 import javax.swing.*;
 
 public class MainApp {

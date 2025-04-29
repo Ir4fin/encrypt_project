@@ -7,9 +7,7 @@ import org.example.cipher.CaesarCipher;
 import org.example.file.FileManager;
 
 import javax.swing.*;
-import javax.swing.border.LineBorder;
 import java.awt.*;
-import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 
