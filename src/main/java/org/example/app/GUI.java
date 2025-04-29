@@ -38,7 +38,7 @@ public class GUI extends JFrame {
         // 2) Параметры окна ----------------------------
         setTitle("Caesar Cipher Encrypter/Decrypter");
         setDefaultCloseOperation(EXIT_ON_CLOSE);
-        setSize(600, 350);
+        setSize(500, 400);
         setLocationRelativeTo(null);
 
         // 3) Главная панель с GridBag ------------------
