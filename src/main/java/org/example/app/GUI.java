@@ -1,8 +1,10 @@
 package org.example.app;
 
 import org.example.Validator;
+import org.example.cipher.BruteForceDecryption;
 import org.example.enums.Alphabet;
 import org.example.cipher.CaesarCipher;
+import org.example.file.FileManager;
 
 import javax.swing.*;
 import javax.swing.border.LineBorder;
@@ -127,6 +129,12 @@ public class GUI extends JFrame {
         decryptBtn.addActionListener(e -> processFile("decrypt"));
         panel.add(decryptBtn, gbc);
 
+        JButton bruteForceButton = new JButton("Bruteforce");
+        bruteForceButton.setBackground(Color.ORANGE);
+        bruteForceButton.setToolTipText("Trying all keys' variations");
+
+        bruteForceButton.addActionListener(e -> processBruteForce());
+        panel.add(bruteForceButton);
         add(panel);
     }
 
@@ -182,7 +190,7 @@ public class GUI extends JFrame {
             Validator.validateFile(inputPath);
 
             // Чтение текста из файла
-            String text = new String(Files.readAllBytes(inputPath));
+            String text = FileManager.readFile(inputPath);
 
             // Обработка текста: шифрование или дешифрование
             String processedText = "";
@@ -193,10 +201,42 @@ public class GUI extends JFrame {
             }
 
             // Запись обработанного текста в выходной файл
-            Files.write(outputPath, processedText.getBytes());
+            FileManager.writeFile(outputPath, processedText);
             NotificationService.showSuccess(FILE_WRITTEN.getValue());
         } catch (IllegalArgumentException ex) {
             NotificationService.showError(ex.getMessage());
+        } catch (Exception ex) {
+            ex.printStackTrace();
+            NotificationService.showError(FILE_PROCESSING_ERROR.getValue());
+        }
+    }
+
+    private void processBruteForce() {
+        String inputFilePath = inputField.getText();
+        String outputFilePath = outputField.getText();
+
+        if (inputFilePath.isEmpty() || outputFilePath.isEmpty()) {
+            NotificationService.showError(FILE_NOT_SELECTED.getValue());
+            return;
+        }
+
+        try {
+            Path inputPath = Paths.get(inputFilePath);
+            Path outputPath = Paths.get(outputFilePath);
+
+            Alphabet alphabet = (Alphabet) alphabetCombo.getSelectedItem();
+            if (alphabet == null) {
+                NotificationService.showError("Выберите алфавит!");
+                return;
+            }
+
+            Validator.validateFile(inputPath);
+
+            String text = FileManager.readFile(inputPath);
+            String result = BruteForceDecryption.bruteForceBestGuess(text, alphabet);
+
+            FileManager.writeFile(outputPath, result);
+            NotificationService.showSuccess("Brute force completed! Best decryption written to file");
         } catch (Exception ex) {
             ex.printStackTrace();
             NotificationService.showError(FILE_PROCESSING_ERROR.getValue());
