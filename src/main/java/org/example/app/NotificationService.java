@@ -2,65 +2,52 @@ package org.example.app;
 
 import javax.swing.*;
 import java.awt.*;
+import java.util.TimerTask;
+import java.util.Timer;
 
 public class NotificationService {
-    private static final float OPACITY_STEP = 0.05f;
-    private static final int FADE_TIMER_DELAY = 15;
-    private static final int AUTO_CLOSE_DELAY = 2000;
+
+    private static final int WIDTH = 400;
+    private static final int HEIGHT = 80;
+    private static final Color ERROR_COLOR = new Color(255, 102, 102);
+    private static final Color SUCCESS_COLOR = new Color(144, 238, 144);
+    private static final Font FONT = new Font("Arial", Font.BOLD, 14);
 
     public static void showSuccess(String message) {
-        showCustomDialog(message, "Success", new Color(0, 255, 0));
+        showNotification(message, SUCCESS_COLOR);
     }
 
     public static void showError(String message) {
-        showCustomDialog(message, "Error", new Color(255, 50, 50));
+        showNotification(message, ERROR_COLOR);
     }
 
-    public static void showInfo(String message) {
-        showCustomDialog(message, "Information", new Color(0, 200, 255));
-    }
-
-    public static void showWarning(String message) {
-        showCustomDialog(message, "Warning", new Color(255, 200, 0));
-    }
-
-    private static void showCustomDialog(String message, String title, Color color) {
+    private static void showNotification(String message, Color bgColor) {
         JDialog dialog = new JDialog();
-        dialog.setTitle(title);
+        dialog.setUndecorated(true);
+        dialog.setSize(WIDTH, HEIGHT);
+        dialog.setLocationRelativeTo(null);
+        dialog.setAlwaysOnTop(true);
         dialog.setLayout(new BorderLayout());
-        dialog.setSize(400, 150);
-        dialog.setUndecorated(true); // Без стандартной рамки
-        dialog.setLocationRelativeTo(null); // В центр экрана
 
         JPanel panel = new JPanel();
-        panel.setBackground(Color.BLACK);
-        panel.setBorder(BorderFactory.createLineBorder(color, 2));
+        panel.setBackground(bgColor);
+        panel.setBorder(BorderFactory.createLineBorder(Color.DARK_GRAY));
+        panel.setLayout(new GridBagLayout());
 
-        JLabel label = new JLabel(message, SwingConstants.CENTER);
-        label.setForeground(color);
-        label.setFont(new Font("Consolas", Font.BOLD, 18));
+        JLabel label = new JLabel(message);
+        label.setForeground(Color.BLACK);
+        label.setFont(FONT);
 
         panel.add(label);
         dialog.add(panel);
-
-        // Плавная прозрачность
-        dialog.setOpacity(0f);
         dialog.setVisible(true);
 
-        new Timer(FADE_TIMER_DELAY, e -> {
-            float opacity = dialog.getOpacity();
-            float next = opacity + OPACITY_STEP;
-            if (next < 1f) {
-                dialog.setOpacity(next);
-            } else {
-                dialog.setOpacity(1f);
-                ((Timer) e.getSource()).stop();
+        // Закрываем автоматически через 2.5 секунды
+        new Timer().schedule(new TimerTask() {
+            @Override
+            public void run() {
+                dialog.dispose();
             }
-        }).start();
-
-        // Авто-закрытие
-        new Timer(AUTO_CLOSE_DELAY, e -> {
-            dialog.dispose();
-        }).start();
+        }, 2500);
     }
 }

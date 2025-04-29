@@ -17,141 +17,113 @@ import static org.example.enums.Error.*;
 import static org.example.enums.InformationalMessage.FILE_WRITTEN;
 
 public class GUI extends JFrame {
-
-    private JTextField inputField;
-    private JTextField outputField;
-    private JTextField keyField;
-    private JComboBox<Alphabet> alphabetCombo;
-
+    private final JTextField inputField = new JTextField(20);
+    private final JTextField outputField = new JTextField(20);
+    private final JTextField keyField = new JTextField(5);
+    private final JComboBox<Alphabet> alphabetCombo = new JComboBox<>(Alphabet.values());
+    private final Validator validator = new Validator();
 
     public GUI() {
-        try {
-            UIManager.setLookAndFeel("javax.swing.plaf.nimbus.NimbusLookAndFeel");
-        } catch (Exception ignored) {
-        }
-        Font uiFont = new Font("Segoe UI", Font.PLAIN, 14);
-        UIManager.put("Label.font", uiFont);
-        UIManager.put("TextField.font", uiFont);
-        UIManager.put("Button.font", uiFont);
-        UIManager.put("ComboBox.font", uiFont);
-
-        // 2) Параметры окна ----------------------------
-        setTitle("Caesar Cipher Encrypter/Decrypter");
-        setDefaultCloseOperation(EXIT_ON_CLOSE);
-        setSize(500, 400);
+        setTitle("Caesar Cipher Tool");
+        setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
+        setSize(600, 400);
         setLocationRelativeTo(null);
 
-        // 3) Главная панель с GridBag ------------------
-        JPanel panel = new JPanel(new GridBagLayout());
-        panel.setBackground(new Color(245, 245, 250)); // светло-серый
+        try {
+            UIManager.setLookAndFeel(UIManager.getSystemLookAndFeelClassName());
+        } catch (Exception ignored) {}
 
+        JPanel panel = new JPanel(new GridBagLayout());
+        panel.setBackground(new Color(240, 248, 255));
         GridBagConstraints gbc = new GridBagConstraints();
-        gbc.insets = new Insets(8, 12, 8, 12);
+        gbc.insets = new Insets(5, 10, 5, 10);
         gbc.fill = GridBagConstraints.HORIZONTAL;
 
-        // Строка 0: Заголовок
-        JLabel title = new JLabel("Encrypter/Decrypter", SwingConstants.CENTER);
-        title.setFont(new Font("Segoe UI", Font.BOLD, 18));
-        title.setForeground(new Color(50, 50, 80));
-        gbc.gridx = 0;
-        gbc.gridy = 0;
-        gbc.gridwidth = 2;
-        panel.add(title, gbc);
+        // Input file
+        gbc.gridx = 0; gbc.gridy = 0;
+        panel.add(new JLabel("Input file:"), gbc);
 
-        // Строка 1: Input file
-        gbc.gridwidth = 1;
-        gbc.gridy = 1;
-        gbc.gridx = 0;
-        panel.add(new JLabel("Input File:"), gbc);
-        inputField = new JTextField();
-        inputField.setBackground(Color.WHITE);
-        inputField.setBorder(new LineBorder(Color.GRAY, 1, true));
         gbc.gridx = 1;
         panel.add(inputField, gbc);
 
-        // Select input button
-        gbc.gridy = 2;
-        gbc.gridx = 1;
-        JButton browseIn = new JButton("Browse...");
-        styleButton(browseIn);
-        browseIn.addActionListener(e -> selectFile(inputField));
-        panel.add(browseIn, gbc);
+        gbc.gridx = 2;
+        JButton inputBrowse = new JButton("Browse");
+        styleButton(inputBrowse);
+        inputBrowse.addActionListener(e -> browseFile(inputField));
+        panel.add(inputBrowse, gbc);
 
-        // Строка 3: Output file
-        gbc.gridy = 3;
-        gbc.gridx = 0;
-        panel.add(new JLabel("Output File:"), gbc);
-        outputField = new JTextField();
-        outputField.setBackground(Color.WHITE);
-        outputField.setBorder(new LineBorder(Color.GRAY, 1, true));
+        // Output file
+        gbc.gridx = 0; gbc.gridy = 1;
+        panel.add(new JLabel("Output file:"), gbc);
+
         gbc.gridx = 1;
         panel.add(outputField, gbc);
 
-        // Select output button
-        gbc.gridy = 4;
-        gbc.gridx = 1;
-        JButton browseOut = new JButton("Browse...");
-        styleButton(browseOut);
-        browseOut.addActionListener(e -> selectFile(outputField));
-        panel.add(browseOut, gbc);
+        gbc.gridx = 2;
+        JButton outputBrowse = new JButton("Browse");
+        styleButton(outputBrowse);
+        outputBrowse.addActionListener(e -> browseFile(outputField));
+        panel.add(outputBrowse, gbc);
 
-        // **Переносим Key на новую строку**  -----------
-        gbc.gridy = 5;
-        gbc.gridx = 0;
+        // Empty row
+        gbc.gridx = 0; gbc.gridy = 2;
+        panel.add(new JLabel(""), gbc);
+
+        // Key
+        gbc.gridx = 0; gbc.gridy = 3;
         panel.add(new JLabel("Key:"), gbc);
-        keyField = new JTextField();
-        keyField.setBackground(Color.WHITE);
-        keyField.setBorder(new LineBorder(Color.GRAY, 1, true));
+
         gbc.gridx = 1;
         panel.add(keyField, gbc);
 
-        // Алфавит
-        gbc.gridy = 6;
-        gbc.gridx = 0;
+        // Alphabet
+        gbc.gridx = 0; gbc.gridy = 4;
         panel.add(new JLabel("Alphabet:"), gbc);
-        alphabetCombo = new JComboBox<>(Alphabet.values());
-        alphabetCombo.setBackground(Color.WHITE);
-        alphabetCombo.setBorder(BorderFactory.createEmptyBorder());
+
         gbc.gridx = 1;
         panel.add(alphabetCombo, gbc);
 
-        // Кнопки Encrypt / Decrypt
-        gbc.gridy = 7;
-        gbc.gridx = 0;
+        // Encrypt button
+        gbc.gridy = 7; gbc.gridx = 0;
         JButton encryptBtn = new JButton("Encrypt");
         styleButton(encryptBtn);
         encryptBtn.addActionListener(e -> processFile("encrypt"));
         panel.add(encryptBtn, gbc);
 
+        // Decrypt button
         gbc.gridx = 1;
         JButton decryptBtn = new JButton("Decrypt");
         styleButton(decryptBtn);
         decryptBtn.addActionListener(e -> processFile("decrypt"));
         panel.add(decryptBtn, gbc);
 
+        // Bruteforce button
+        gbc.gridy = 11; gbc.gridx = 0; gbc.gridwidth = 2;
+        gbc.insets = new Insets(15, 10, 10, 10);
         JButton bruteForceButton = new JButton("Bruteforce");
         bruteForceButton.setBackground(Color.ORANGE);
+        bruteForceButton.setFont(bruteForceButton.getFont().deriveFont(Font.BOLD));
         bruteForceButton.setToolTipText("Trying all keys' variations");
-
         bruteForceButton.addActionListener(e -> processBruteForce());
-        panel.add(bruteForceButton);
+        panel.add(bruteForceButton, gbc);
+
         add(panel);
+        setVisible(true);
     }
 
-    private void styleButton(JButton btn) {
-        btn.setBackground(new Color(0, 120, 215));
-        btn.setForeground(Color.WHITE);
-        btn.setBorder(BorderFactory.createEmptyBorder());       // убираем рамку
-        btn.setFocusPainted(false);
-        btn.setContentAreaFilled(true);                         // фон всё ещё заливается
-        btn.setBorderPainted(false);
-
+    private void styleButton(JButton button) {
+        button.setFocusPainted(false);
+        button.setBorderPainted(false);
+        button.setBackground(new Color(100, 149, 237));
+        button.setForeground(Color.WHITE);
+        button.setFont(new Font("Arial", Font.PLAIN, 13));
     }
 
-    private void selectFile(JTextField field) {
-        JFileChooser chooser = new JFileChooser();
-        if (chooser.showOpenDialog(this) == JFileChooser.APPROVE_OPTION) {
-            field.setText(chooser.getSelectedFile().getAbsolutePath());
+    private void browseFile(JTextField field) {
+        JFileChooser fileChooser = new JFileChooser();
+        int result = fileChooser.showOpenDialog(this);
+        if (result == JFileChooser.APPROVE_OPTION) {
+            field.setText(fileChooser.getSelectedFile().getAbsolutePath());
         }
     }
 
