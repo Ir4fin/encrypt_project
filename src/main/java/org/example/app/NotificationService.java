@@ -7,15 +7,6 @@ import java.awt.*;
 
 public class NotificationService {
 
-    static {
-        try {
-            // Устанавливаем тёмную тему FlatLaf один раз при старте
-            UIManager.setLookAndFeel(new FlatDarculaLaf());
-        } catch (UnsupportedLookAndFeelException e) {
-            e.printStackTrace();
-        }
-    }
-
     private NotificationService() {}
 
     public static void showSuccess(String message) {

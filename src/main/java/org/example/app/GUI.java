@@ -15,6 +15,7 @@ import java.nio.file.Paths;
 
 public class GUI extends JFrame {
 
+
     private JTextField inputTextField;
     private JTextField outputTextField;
     private JTextField keyTextField;
@@ -24,10 +25,11 @@ public class GUI extends JFrame {
     private JButton encryptButton;
     private JButton decryptButton;
 
+
     public GUI() {
         // Настройка окна
         setTitle("Caesar Cipher Encryption Tool");
-        setSize(400, 300);
+        setSize(500, 200);
         setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
         setLocationRelativeTo(null);
         setLayout(new FlowLayout());
@@ -146,7 +148,7 @@ public class GUI extends JFrame {
             if (operation.equals("encrypt")) {
                 processedText = CaesarCipher.encrypt(text, key, alphabet);
             } else if (operation.equals("decrypt")) {
-                processedText = CaesarCipher.decrypt(text, -key, alphabet); // Для дешифрования с обратным ключом
+                processedText = CaesarCipher.decrypt(text, key, alphabet); // Для дешифрования с обратным ключом
             }
 
             // Запись обработанного текста в выходной файл
